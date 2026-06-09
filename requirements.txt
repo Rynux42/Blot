@@ -1,0 +1,4 @@
+stoat.py
+emoji
+config
+aiosqlite
