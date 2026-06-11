@@ -1,4 +1,4 @@
 .env
 blot.db
 blot.log
-__pycache__
+**/__pycache__/
