@@ -2,3 +2,4 @@ stoat.py
 emoji
 config
 aiosqlite
+python-dotenv
