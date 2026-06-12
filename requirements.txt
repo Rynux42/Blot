@@ -3,3 +3,6 @@ emoji
 config
 aiosqlite
 python-dotenv
+pillow
+requests
+aiohttp

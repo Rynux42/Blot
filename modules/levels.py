@@ -3,15 +3,21 @@ modules/levels.py
 Level/XP systém: !level, !setlevelchannel, automatické XP za správy.
 """
 
+
 import stoat
 from stoat.ext import commands
 
 import modules.base as base
 from modules.base import bot
+from modules import imggen
+import math
+import aiohttp
 
-XP_RATIO = 1.5
-XP_FIRST_LEVEL = 20
+XP_RATIO = 1.7
+XP_FIRST_LEVEL = 50
 
+
+CDNClient = stoat.CDNClient(state=bot.state)
 
 async def _level_message(server_id: int, channel_id: int, message: str):
     """Pošle level-up správu do nastaveného kanálu, alebo do pôvodného kanálu."""
@@ -58,9 +64,19 @@ def setup():
 
         user_level, xp = row[0], row[1]
         max_xp = XP_FIRST_LEVEL * (XP_RATIO**user_level)
-        await ctx.channel.send(
-            f"{ctx.author.mention} you have Level {user_level}; XP: {xp}/{max_xp:.1f}"
-        )
+
+
+        if(ctx.author.avatar.url() is None):
+            img = imggen.generateImage(None,user_level,math.floor(xp),math.floor(max_xp),ctx.author.name)
+        else:
+            img = imggen.generateImage(ctx.author.avatar.url(),user_level,math.floor(xp),math.floor(max_xp),ctx.author.name)
+        
+        form = aiohttp.FormData()
+        form.add_field("file",img,filename="level_card.png",content_type="image/png")
+        url = await CDNClient.upload("attachments", form)
+
+        await ctx.channel.send(content="",attachments=[url])
+
 
     @bot.command()
     @commands.has_server_permissions(manage_server=True)

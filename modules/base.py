@@ -8,11 +8,14 @@ import logging
 from stoat.ext import commands
 
 import config
+import stoat
 
 # Centrálne inštancie — moduly ich importujú priamo
 bot = commands.Bot(command_prefix=config.PREFIX)
 db = None  # nastavuje sa v on_ready (main.py) cez set_db()
 logger = logging.getLogger("blot")
+
+
 
 
 def set_db(connection):
