@@ -78,7 +78,7 @@ async def help(context, command=""):
             "!ban <member> [reason]         Ban a member\n"
             "!unban <username#tag>          Unban a user\n"
             "!level                         Show your level\n"
-            "!setlevelchannel <#channel>    Set level-up announcement channel"
+            "!setlevelchannel <#channel>    Set level-up announcement channel\n"
             "!top                           Show list of best members"
         ),
         "!help": "Just type !help",
