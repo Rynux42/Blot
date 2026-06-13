@@ -52,9 +52,13 @@ def setup():
     """Zaregistruje všetky handlery tohto modulu. Volá main.py pri štarte."""
 
     @bot.command()
-    async def level(ctx):
+    async def level(ctx, user=""):
         server_id = ctx.server.id
-        user_id = ctx.author.id
+        if not user:
+            user_id = ctx.author.id
+        else:
+            user_id = user.strip("<@>")
+
         async with base.db.execute(
             "SELECT user_level, user_xp FROM levels WHERE user_id=? AND server_id=?",
             (

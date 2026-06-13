@@ -86,8 +86,8 @@ async def help(context, command=""):
         "!kick": "!kick <@member>  —  e.g. !kick @Spammer",
         "!ban": "!ban <@member> [reason]  —  e.g. !ban @Spammer rule violation",
         "!unban": "!unban <username#tag>  —  e.g. !unban Spammer#1234",
-        "!level": "Just type !level",
-        "!setlevelchannel": "!setlevelchannel <#channel>  —  e.g. !setlevelchannel #general",
+        "!level": "!level (Show your level) / !level @Spammer (Show level of other member)",
+        "!setlevelchannel": "!setlevelchannel <#channel>  —  e.g. !setlevelchannel #general / !setlevelchannel (Choose channel where you are)",
     }
     await context.send(lines.get(command, "Unknown command"))
     logger.info("Executed !help command")
