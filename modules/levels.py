@@ -92,12 +92,12 @@ def setup():
 
     @bot.command()
     @commands.has_server_permissions(manage_server=True)
-    async def setlevelchannel(ctx, channel: str):
+    async def setlevelchannel(ctx, channel: str = ""):
         if not channel:
-            await ctx.channel.send("Invalid use of command")
-            return
+            channel_id = ctx.channel.id
+        else:
+            channel_id = channel.strip("<#>")
 
-        channel_id = channel.strip("<#>")
         try:
             await bot.fetch_channel(channel_id)
         except Exception:
