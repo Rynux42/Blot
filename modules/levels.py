@@ -17,7 +17,6 @@ from modules.base import bot
 XP_RATIO = config.XP_RATIO
 XP_FIRST_LEVEL = config.XP_FIRST_LEVEL
 
-
 CDNClient = stoat.CDNClient(state=bot.state)
 
 
@@ -54,9 +53,14 @@ def setup():
 
     @bot.command()
     async def level(ctx):
+        server_id = ctx.server.id
         user_id = ctx.author.id
         async with base.db.execute(
-            "SELECT user_level, user_xp FROM levels WHERE user_id=?", (user_id,)
+            "SELECT user_level, user_xp FROM levels WHERE user_id=? AND server_id=?",
+            (
+                user_id,
+                server_id,
+            ),
         ) as cursor:
             row = await cursor.fetchone()
 
@@ -119,9 +123,21 @@ def setup():
         await ctx.channel.send(f"Level-up channel set to <#{channel_id}>")
         base.logger.info("Executed !setlevelchannel command")
 
+    # Error handler for !setlevelchannel
+    @setlevelchannel.error
+    async def setlevelchannel_error(context, error):
+        if isinstance(error, commands.MissingPermissions):
+            await context.send(
+                "You don't have permissions to run this command (Manage server)!"
+            )
+            base.logger.info(
+                "Missing permissions for !setlevelchannel command (Manage server)"
+            )
+
     @bot.on(stoat.MessageCreateEvent)
     async def on_message(event):
         message = event.message
+        server_id = event.message.server.id
 
         if message.author.id == bot.user.id:
             return
@@ -132,7 +148,11 @@ def setup():
         gained_xp = max(1.0, len(message.content) / 10)
 
         async with base.db.execute(
-            "SELECT user_level, user_xp FROM levels WHERE user_id=?", (user_id,)
+            "SELECT user_level, user_xp FROM levels WHERE user_id=? AND server_id=?",
+            (
+                user_id,
+                server_id,
+            ),
         ) as cursor:
             row = await cursor.fetchone()
 
@@ -146,8 +166,8 @@ def setup():
                 leveled_up = True
 
             await base.db.execute(
-                "INSERT INTO levels (user_id, user_level, user_xp) VALUES (?, ?, ?)",
-                (user_id, user_level, xp),
+                "INSERT INTO levels (server_id, user_id, user_level, user_xp) VALUES (?, ?, ?, ?)",
+                (server_id, user_id, user_level, xp),
             )
             await base.db.commit()
 
@@ -165,8 +185,8 @@ def setup():
             if xp > xp_needed:
                 user_level, xp = _calc_level_up(user_level, xp)
                 await base.db.execute(
-                    "UPDATE levels SET user_level=?, user_xp=? WHERE user_id=?",
-                    (user_level, xp, user_id),
+                    "UPDATE levels SET user_level=?, user_xp=? WHERE user_id=? AND server_id=?",
+                    (user_level, xp, user_id, server_id),
                 )
                 await base.db.commit()
                 await _level_message(
@@ -176,6 +196,7 @@ def setup():
                 )
             else:
                 await base.db.execute(
-                    "UPDATE levels SET user_xp=? WHERE user_id=?", (xp, user_id)
+                    "UPDATE levels SET user_xp=? WHERE user_id=? AND server_id=?",
+                    (xp, user_id, server_id),
                 )
                 await base.db.commit()

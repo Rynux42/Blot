@@ -2,14 +2,14 @@ import logging
 import os
 
 import aiosqlite
+import stoat
+from dotenv import load_dotenv
+
+import config
 import modules.levels as levels
 import modules.moderation as moderation
 import modules.reaction_roles as reaction_roles
-import stoat
-from dotenv import load_dotenv
 from modules.base import bot, set_db
-
-import config
 
 # ==== LOGGING ====
 logging.basicConfig(
@@ -37,6 +37,7 @@ async def init_db(db):
         """)
         await db.execute("""
             CREATE TABLE IF NOT EXISTS levels (
+                server_id, TEXT,
                 user_id INT,
                 user_level INT,
                 user_xp BIGINT
