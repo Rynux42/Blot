@@ -101,9 +101,17 @@ def setup():
         server_id = ctx.server.id
         if not user:
             user_id = ctx.author.id
+            target_name = ctx.author.name
+            target_avatar = ctx.author.avatar.url()
         else:
             user_id = user.strip("<@>")
-
+            try:
+                fetched = await bot.fetch_user(user_id)
+                target_name = fetched.name
+                target_avatar = fetched.avatar.url() if fetched.avatar else None
+            except Exception:
+                target_name = user_id
+                target_avatar = None
         async with base.db.execute(
             "SELECT user_level, user_xp FROM levels WHERE user_id=? AND server_id=?",
             (
@@ -114,23 +122,29 @@ def setup():
             row = await cursor.fetchone()
 
         if row is None:
-            await ctx.channel.send(ctx.author.mention + " you don't have any level yet")
+            await ctx.channel.send(
+                ctx.author.mention + " member don't have any level yet"
+            )
             return
 
         user_level, xp = row[0], row[1]
         max_xp = XP_FIRST_LEVEL * (XP_RATIO**user_level)
 
-        if ctx.author.avatar.url() is None:
+        if target_avatar is None:
             img = imggen.generateImage(
-                None, user_level, math.floor(xp), math.floor(max_xp), ctx.author.name
-            )
-        else:
-            img = imggen.generateImage(
-                ctx.author.avatar.url(),
+                None,
                 user_level,
                 math.floor(xp),
                 math.floor(max_xp),
-                ctx.author.name,
+                target_name,
+            )
+        else:
+            img = imggen.generateImage(
+                target_avatar,
+                user_level,
+                math.floor(xp),
+                math.floor(max_xp),
+                target_name,
             )
 
         form = aiohttp.FormData()
