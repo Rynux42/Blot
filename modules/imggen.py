@@ -16,7 +16,6 @@ def create_circular_image(image):
     img = image
 
     # 2. Square the image based on its shortest side (so the circle isn't skewed)
-    size = min(img.size)
     img = ImageOps.fit(img, (70, 70), centering=(0.5, 0.5))
 
     # 3. Create a blank grayscale image for the mask
@@ -59,7 +58,7 @@ def generateImage(profileURL, level, xp, max_xp, name):
     canvas.circle((50, 50), 35, fill=None, outline=(255, 255, 255), width=5)
     canvas.rounded_rectangle((75, 100, 400, 125), 10, (108, 108, 108))
     canvas.rounded_rectangle((75, 100, max_s, 125), 10, (106, 201, 111))
-    canvas.text((300, 10), f"Level {level}", (255, 255, 255), font=font)
+    canvas.text((350, 10), f"Level {level}", (255, 255, 255), font=font)
     canvas.text((300, 30), f"XP: {xp}/{max_xp}", (255, 255, 255), font=font)
     canvas.text((85, 75), name, (255, 255, 255), font=font)
 

@@ -102,7 +102,10 @@ def setup():
         if not user:
             user_id = ctx.author.id
             target_name = ctx.author.name
-            target_avatar = ctx.author.avatar.url()
+            if ctx.author.avatar:
+                target_avatar = ctx.author.avatar.url()
+            else:
+                target_avatar = None
         else:
             user_id = user.strip("<@>")
             try:
