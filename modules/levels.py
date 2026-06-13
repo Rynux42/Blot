@@ -51,51 +51,50 @@ def _calc_level_up(current_level: int, xp: float):
 def setup():
     """Zaregistruje všetky handlery tohto modulu. Volá main.py pri štarte."""
 
+    @bot.command()
+    async def top(ctx):
+        server_id = ctx.server.id
+        author_id = ctx.author.id
 
-@bot.command()
-async def top(ctx):
-    server_id = ctx.server.id
-    author_id = ctx.author.id
+        async with base.db.execute(
+            "SELECT user_id, user_level, user_xp FROM levels WHERE server_id=? ORDER BY user_level DESC, user_xp DESC",
+            (server_id,),
+        ) as cursor:
+            rows = await cursor.fetchall()
 
-    async with base.db.execute(
-        "SELECT user_id, user_level, user_xp FROM levels WHERE server_id=? ORDER BY user_level DESC, user_xp DESC",
-        (server_id,),
-    ) as cursor:
-        rows = await cursor.fetchall()
+        if not rows:
+            await ctx.channel.send("No levels yet on this server!")
+            return
 
-    if not rows:
-        await ctx.channel.send("No levels yet on this server!")
-        return
+        author_rank = None
+        for i, row in enumerate(rows, 1):
+            if row[0] == author_id:
+                author_rank = i
+                author_row = row
+                break
 
-    author_rank = None
-    for i, row in enumerate(rows, 1):
-        if row[0] == author_id:
-            author_rank = i
-            author_row = row
-            break
+        top10 = rows[:10]
 
-    top10 = rows[:10]
+        async def format_row(i, row):
+            uid, lvl, xp = row
+            try:
+                user = await bot.fetch_user(uid)
+                name = user.name
+            except Exception:
+                name = f"Unknown ({uid})"
+            medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"#{i}")
+            return f"{medal} {name} — Level {lvl} ({math.floor(xp)} XP)"
 
-    async def format_row(i, row):
-        uid, lvl, xp = row
-        try:
-            user = await bot.fetch_user(uid)
-            name = user.name
-        except Exception:
-            name = f"Unknown ({uid})"
-        medal = {1: "🥇", 2: "🥈", 3: "🥉"}.get(i, f"#{i}")
-        return f"{medal} {name} — Level {lvl} ({math.floor(xp)} XP)"
+        lines = []
+        for i, row in enumerate(top10, 1):
+            lines.append(await format_row(i, row))
 
-    lines = []
-    for i, row in enumerate(top10, 1):
-        lines.append(await format_row(i, row))
+        if author_rank is not None and author_rank > 10:
+            lines.append("...")
+            lines.append(f"#{author_rank} " + await format_row(author_rank, author_row))
 
-    if author_rank is not None and author_rank > 10:
-        lines.append("...")
-        lines.append(f"#{author_rank} " + await format_row(author_rank, author_row))
-
-    await ctx.channel.send("🏆 **Top 10**\n" + "\n".join(lines))
-    base.logger.info("Executed !top command")
+        await ctx.channel.send("🏆 **Top 10**\n" + "\n".join(lines))
+        base.logger.info("Executed !top command")
 
     @bot.command()
     async def level(ctx, user=""):
@@ -211,7 +210,7 @@ async def top(ctx):
             leveled_up = False
 
             if xp > XP_FIRST_LEVEL:
-                user_level = 2
+                user_level = 1
                 user_level, xp = _calc_level_up(user_level, xp)
                 leveled_up = True
 
